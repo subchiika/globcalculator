@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<title>Auction Price Calculator</title>
+<style>
+/* ============================== */
+/*  ზოგადი სტილი                  */
+/* ============================== */
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #fdf2e9, #f8cfc9);
+    margin: 0;
+    padding: 0;
+}
+
+/* მთავარი კონტეინერი */
+.container {
+    max-width: 580px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* სათაური */
+h2 {
+    text-align: center;
+    color: #8b2e2e;
+    font-size: 24px;
+    margin-bottom: 18px;
+}
+
+/* Dropdown სტილი */
+select {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #c4a3a3;
+    margin-top: 10px;
+    background: #fff;
+    color: #333;
+}
+
+/* Searchable dropdown */
+select:focus {
+    border-color: #b82828;
+    box-shadow: 0 0 6px rgba(184, 40, 40, 0.4);
+}
+
+/* price სტილი */
+#price {
+    margin-top: 22px;
+    text-align: center;
+    font-size: 20px;
+    color: #b82828;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* ჩარჩოს სტილი */
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 18px 0;
+}
+
+/* Responsive დიზაინი */
+@media (max-width: 600px) {
+    .container {
+        margin: 20px;
+        padding: 20px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    select {
+        font-size: 15px;
+    }
+    #price {
+        font-size: 18px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>გზის ღირებულების კალკულატორი</h2>
+
+    <select id="auctionSelect" onchange="updateLocations()">
+        <option value="">აირჩიე აუქციონი</option>
+        <option value="copart">Copart</option>
+        <option value="iaai">IAAI</option>
+    </select>
+
+    <select id="locationSelect" onchange="showPrice()">
+        <option value="">აირჩიე ლოკაცია</option>
+    </select>
+
+    <hr>
+
+    <div id="price"></div>
+</div>
+<!-- სურათი price-ის ქვემოთ -->
+<img src="https://glob.ge/wp-content/uploads/sites/3/2024/04/Glob-Photo.jpg" alt="Auction" style="width:100%; max-width:500px; display:block; margin: 20px auto 0 auto; border-radius:8px;">
+<script>
+/* ============================== */
+/* მონაცემები */
+const data = {
+    copart: [
+        { code: "AL", city: "Eight Mile", price: 1567 },
+        { code: "AL", city: "Dothan", price: 1567 },
+        { code: "AL", city: "Hueytown", price: 1000 },
+        { code: "AL", city: "Montgomery", price: 1000 },
+        { code: "AL", city: "Newton", price: 1000 },
+        { code: "AL", city: "Tanner", price: 1000 },
+        { code: "AL", city: "Theodore", price: 1000 },
+        { code: "AK", city: "Anchorage", price: 1000 },
+        { code: "AR", city: "Conway", price: 1000 },
+        { code: "AR", city: "Prairie Grove", price: 1000 },
+        { code: "AZ", city: "Phoenix", price: 1000 },
+        { code: "AZ", city: "Tucson", price: 1000 },
+        { code: "CA", city: "Adelanto", price: 1000 },
+        { code: "CA", city: "Anderson", price: 1000 },
+        { code: "CA", city: "Antelope", price: 1000 },
+        { code: "CA", city: "Bakersfield", price: 1000 },
+        { code: "CA", city: "Colton", price: 1000 },
+        { code: "CA", city: "Fresno", price: 1000 },
+        { code: "CA", city: "Hayward", price: 1000 },
+        { code: "CA", city: "Los Angeles", price: 1000 },
+        { code: "CA", city: "Martinez", price: 1000 },
+        { code: "CA", city: "Mentone", price: 1000 },
+        { code: "CA", city: "Rancho Cucamonga", price: 1000 },
+        { code: "CA", city: "Sacramento", price: 1000 },
+        { code: "CA", city: "San Diego", price: 1000 },
+        { code: "CA", city: "San Martin", price: 1000 },
+        { code: "CA", city: "Sun Valley", price: 1000 },
+        { code: "CA", city: "Vallejo", price: 1000 },
+        { code: "CA", city: "Van Nuys", price: 1000 },
+        { code: "CA", city: "Wilmington", price: 1000 },
+        { code: "CO", city: "Brighton", price: 1000 },
+        { code: "CO", city: "Colorado Springs", price: 1000 },
+        { code: "CO", city: "Denver", price: 1000 },
+        { code: "CO", city: "Littleton", price: 1000 },
+        { code: "CT", city: "East Granby", price: 1000 },
+        { code: "CT", city: "New Britain", price: 1000 },
+        { code: "DE", city: "Seaford", price: 1000 },
+        { code: "FL", city: "Apopka", price: 1000 },
+        { code: "FL", city: "Arcadia", price: 1000 },
+        { code: "FL", city: "Fort Pierce", price: 1000 },
+        { code: "FL", city: "Homestead", price: 1000 },
+        { code: "FL", city: "Jacksonville", price: 1000 },
+        { code: "FL", city: "Miami", price: 1000 },
+        { code: "FL", city: "Midway", price: 1000 },
+        { code: "FL", city: "Ocala", price: 1000 },
+        { code: "FL", city: "Opa Locka", price: 1000 },
+        { code: "GA", city: "Atlanta East", price: 1000 },
+        { code: "GA", city: "Atlanta North", price: 1000 },
+        { code: "GA", city: "Atlanta South", price: 1000 },
+        { code: "GA", city: "Atlanta West", price: 1000 },
+        { code: "GA", city: "Augusta", price: 1000 },
+        { code: "GA", city: "Cartersville", price: 1000 },
+        { code: "GA", city: "Fairburn", price: 1000 },
+        { code: "GA", city: "Macon", price: 1000 },
+        { code: "GA", city: "Savannah", price: 1000 },
+        { code: "GA", city: "Tifton", price: 1000 }
+    ],
+    iaai: [
+        { code: "AK", city: "Anchorage", price: 1000 },
+        { code: "AL", city: "Huntsville", price: 1000 },
+        { code: "AZ", city: "Tucson", price: 1000 },
+        { code: "CA", city: "Carson", price: 1000 },
+        { code: "CA", city: "Perris", price: 1000 },
+        { code: "CO", city: "Colorado Springs", price: 1000 },
+        { code: "FL", city: "Clearwater", price: 1000 },
+        { code: "GA", city: "Atlanta", price: 1000 },
+        { code: "GA", city: "Savannah", price: 1000 },
+        { code: "IA", city: "Davenport", price: 1000 },
+        { code: "IL", city: "Chicago North", price: 1000 },
+        { code: "IL", city: "Chicago South", price: 1000 },
+        { code: "IN", city: "Indianapolis", price: 1000 },
+        { code: "KY", city: "Ashland", price: 1000 },
+        { code: "MA", city: "Taunton", price: 1000 },
+        { code: "MA", city: "Templeton", price: 1000 },
+        { code: "MN", city: "Minneapolis/St Paul", price: 1000 },
+        { code: "NC", city: "Asheville", price: 1000 },
+        { code: "NC", city: "Charlotte", price: 1000 },
+        { code: "NC", city: "Wilmington", price: 1000 },
+        { code: "NJ", city: "Central New Jersey", price: 1000 },
+        { code: "NY", city: "Monticello", price: 1000 },
+        { code: "OH", city: "Cincinnati-South", price: 1000 },
+        { code: "OH", city: "Cleveland", price: 1000 },
+        { code: "OH", city: "Columbus", price: 1000 },
+        { code: "OH", city: "Dayton", price: 1000 },
+        { code: "SC", city: "Charleston", price: 1000 },
+        { code: "TN", city: "Nashville", price: 1000 },
+        { code: "TX", city: "Houston", price: 1000 },
+        { code: "TX", city: "Houston South", price: 1000 },
+        { code: "TX", city: "Houston-North", price: 1000 },
+        { code: "TX", city: "San Antonio-South", price: 1000 },
+        { code: "VA", city: "Tidewater", price: 1000 },
+        { code: "VA", city: "Chesapeake", price: 1000 }
+    ]
+};
+
+/* ============================== */
+/* Functions */
+function updateLocations() {
+    const auction = document.getElementById("auctionSelect").value;
+    const locationSelect = document.getElementById("locationSelect");
+    const priceDiv = document.getElementById("price");
+
+    locationSelect.innerHTML = '<option value="">აირჩიე ლოკაცია</option>';
+    priceDiv.style.opacity = 0;
+
+    if (auction && data[auction]) {
+        data[auction].forEach((loc, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = loc.code + " " + loc.city;
+            locationSelect.appendChild(option);
+        });
+    }
+}
+
+
+
+
+
+
+function showPrice() {
+    const auction = document.getElementById("auctionSelect").value;
+    const index = document.getElementById("locationSelect").value;
+    const priceDiv = document.getElementById("price");
+
+    if (auction && index !== "") {
+        const loc = data[auction][index];
+        priceDiv.innerHTML = "გზის ფასი: $" + loc.price;
+        // animation
+        setTimeout(()=>{ priceDiv.style.opacity = 1; }, 50);
+    } else {
+        priceDiv.style.opacity = 0;
+    }
+}
+
+/* ============================== */
+/* ახალი ლოკაციების დამატება push()-ით */
+// data.copart.push({ code: "NY", city: "Newburgh", price: 1100 });
+// data.iaai.push({ code: "VA", city: "Pulaski", price: 1200 });
+</script>
+
+</body>
+</html>
